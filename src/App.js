@@ -56,16 +56,32 @@ export default function App() {
   const [movies, setMovies] = useState(tempMovieData);
   const [watched, setWatched] = useState(tempWatchedData);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     async function fetchMovie() {
       setIsLoading(true);
-      const res = await fetch(
-        ` http://www.omdbapi.com/?i=tt3896198&apikey=${KEY}&s=interstellar`
-      );
-      const data = await res.json();
-      setMovies(data?.Search);
-      setIsLoading(false);
+
+      try {
+        const res = await fetch(
+          ` http://www.omdbapi.com/?i=tt3896198&apikey=${KEY}&s=interstellar`
+        );
+
+        if (!res.ok) {
+          throw new Error("Something went wrong with fetching movies");
+        }
+
+        const data = await res.json();
+
+        if (data.Response === "False") throw new Error("Movie not found");
+
+        setMovies(data?.Search);
+      } catch (error) {
+        console.error(error.message);
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     fetchMovie();
@@ -80,7 +96,9 @@ export default function App() {
 
       <Main>
         <Box>
-          <MovieList movies={movies} />
+          {isLoading && <Loader />}
+          {!isLoading && !error && <MovieList movies={movies} />}
+          {error && <ErrorMessage message={error} />}
         </Box>
 
         <Box>
@@ -89,6 +107,18 @@ export default function App() {
         </Box>
       </Main>
     </>
+  );
+}
+
+function Loader() {
+  return <p className="loader">Loading...</p>;
+}
+
+function ErrorMessage({ message }) {
+  return (
+    <p className="error">
+      <span>🔴</span> {message}
+    </p>
   );
 }
 
@@ -176,7 +206,6 @@ function WatchedBox() {
 */
 
 function MovieList({ movies }) {
-  console.log(movies, "dcm");
   return (
     <ul className="list">
       {movies?.map((movie) => (
