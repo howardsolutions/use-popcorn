@@ -63,7 +63,9 @@ export default function App() {
       return;
     }
 
-    fetchMovie();
+    const getMovies = setTimeout(fetchMovie, 400);
+
+    return () => clearTimeout(getMovies);
   }, [query]);
 
   return (
