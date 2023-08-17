@@ -63,6 +63,7 @@ export default function App() {
       return;
     }
 
+    handleCloseMovie();
     const getMovies = setTimeout(fetchMovie, 400);
 
     return () => clearTimeout(getMovies);
@@ -289,6 +290,15 @@ function MovieDetails({
     document.title = `Movie | ${title}`;
     return () => (document.title = "usePopCorn");
   }, [title]);
+
+  useEffect(() => {
+    function handleEscape(e) {
+      if (e.code === "Escape") onCloseMovie();
+    }
+    document.addEventListener("keydown", handleEscape);
+
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [onCloseMovie]);
 
   return (
     <div className="details">
