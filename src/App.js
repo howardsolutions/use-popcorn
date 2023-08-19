@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovie";
+import { useLocalStorageState } from "./useLocalStorage";
 
 const KEY = "e140aa45";
 
@@ -9,13 +10,9 @@ const average = (arr) =>
 
 export default function App() {
   const [query, setQuery] = useState("interstellar");
-
-  const [watched, setWatched] = useState(() => {
-    const storedValue = localStorage.getItem("watched");
-    return JSON.parse(storedValue) || [];
-  });
-
   const [selectedId, setSelectedId] = useState(null);
+
+  const [watched, setWatched] = useLocalStorageState([], "watched");
 
   const { movies, isLoading, error } = useMovies(query);
 
@@ -23,9 +20,9 @@ export default function App() {
     setSelectedId((prevId) => (id === prevId ? null : id));
   };
 
-  const handleCloseMovie = () => {
+  function handleCloseMovieDetails() {
     setSelectedId(null);
-  };
+  }
 
   const handleAddWatched = (watchedMovie) => {
     setWatched((prevList) => [...prevList, watchedMovie]);
@@ -55,7 +52,7 @@ export default function App() {
           {selectedId ? (
             <MovieDetails
               onAddWatched={handleAddWatched}
-              onCloseMovie={handleCloseMovie}
+              onCloseMovie={handleCloseMovieDetails}
               selectedId={selectedId}
               watchedMovies={watched}
             />
@@ -159,31 +156,6 @@ function Box({ children }) {
     </div>
   );
 }
-
-/*
-function WatchedBox() {
-  const [watched, setWatched] = useState(tempWatchedData);
-  const [isOpen2, setIsOpen2] = useState(true);
-
-  return (
-    <div className="box">
-      <button
-        className="btn-toggle"
-        onClick={() => setIsOpen2((open) => !open)}
-      >
-        {isOpen2 ? "–" : "+"}
-      </button>
-
-      {isOpen2 && (
-        <>
-          <WatchedSummary watched={watched} />
-          <WatchedMoviesList watched={watched} />
-        </>
-      )}
-    </div>
-  );
-}
-*/
 
 function MovieList({ movies, onSelectMovie }) {
   return (

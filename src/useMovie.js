@@ -47,7 +47,6 @@ export function useMovies(query, callback) {
       return;
     }
 
-    // handleCloseMovie();
     const getMovies = setTimeout(fetchMovie, 400);
 
     return () => clearTimeout(getMovies);
