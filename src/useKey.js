@@ -1,5 +1,5 @@
 /**
- * hook that perform an action when listen to certain key event
+ * hook that perform an action when certain key event happens
  * @param {string} key - whatever key event
  * @param {Function} action - a callback function or the action u wanna perform with certain event
  * @return {void} - nothing to return
