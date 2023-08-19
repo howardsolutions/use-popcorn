@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovie";
 import { useLocalStorageState } from "./useLocalStorage";
+import { useKey } from "./useKey";
 
 const KEY = "e140aa45";
 
@@ -104,20 +105,12 @@ function Logo() {
 function Search({ query, setQuery }) {
   const inputEl = useRef(null);
 
-  useEffect(() => {
-    function callback(e) {
-      if (document.activeElement === inputEl.current) return;
+  useKey("Enter", function () {
+    if (document.activeElement === inputEl.current) return;
 
-      if (e.code === "Enter") {
-        inputEl.current.focus();
-        setQuery("");
-      }
-    }
-
-    document.addEventListener("keydown", callback);
-
-    return () => document.removeEventListener("keydown", callback);
-  }, [setQuery]);
+    inputEl.current.focus();
+    setQuery("");
+  });
 
   return (
     <input
@@ -255,14 +248,7 @@ function MovieDetails({
     return () => (document.title = "usePopCorn");
   }, [title]);
 
-  useEffect(() => {
-    function handleEscape(e) {
-      if (e.code === "Escape") onCloseMovie();
-    }
-    document.addEventListener("keydown", handleEscape);
-
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [onCloseMovie]);
+  useKey("Escape", onCloseMovie);
 
   return (
     <div className="details">
