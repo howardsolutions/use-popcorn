@@ -1,5 +1,6 @@
-import { useState, useEffect, useReducer, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import StarRating from "./StarRating";
+import { useMovies } from "./useMovie";
 
 const KEY = "e140aa45";
 
@@ -8,14 +9,15 @@ const average = (arr) =>
 
 export default function App() {
   const [query, setQuery] = useState("interstellar");
-  const [movies, setMovies] = useState([]);
+
   const [watched, setWatched] = useState(() => {
     const storedValue = localStorage.getItem("watched");
     return JSON.parse(storedValue) || [];
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+
   const [selectedId, setSelectedId] = useState(null);
+
+  const { movies, isLoading, error } = useMovies(query);
 
   const handleSelectMovie = (id) => {
     setSelectedId((prevId) => (id === prevId ? null : id));
@@ -32,49 +34,6 @@ export default function App() {
   const handleDeleteWatched = (id) => {
     setWatched((prevList) => prevList.filter((movie) => movie.imdbID !== id));
   };
-
-  useEffect(() => {
-    async function fetchMovie() {
-      setIsLoading(true);
-      setError("");
-
-      try {
-        const res = await fetch(
-          ` http://www.omdbapi.com/?i=tt3896198&apikey=${KEY}&s=${query}`
-        );
-
-        if (!res.ok) {
-          throw new Error("Something went wrong with fetching movies");
-        }
-
-        const data = await res.json();
-
-        if (data.Response === "False") throw new Error("Movie not found");
-
-        setMovies(data?.Search);
-      } catch (error) {
-        console.error(error.message);
-        setError(error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    if (query.length < 3) {
-      setMovies([]);
-      setError("");
-      return;
-    }
-
-    handleCloseMovie();
-    const getMovies = setTimeout(fetchMovie, 400);
-
-    return () => clearTimeout(getMovies);
-  }, [query]);
-
-  useEffect(() => {
-    localStorage.setItem("watched", JSON.stringify(watched));
-  }, [watched]);
 
   return (
     <>
@@ -266,6 +225,14 @@ function MovieDetails({
   const watchedUserRating = watchedMovies.find(
     (movie) => movie.imdbID === selectedId
   )?.userRating;
+
+  const countRef = useRef(0);
+
+  useEffect(() => {
+    if (!userRating) return;
+
+    countRef.current++;
+  }, [userRating]);
 
   const {
     Title: title,
